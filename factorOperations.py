@@ -194,7 +194,43 @@ def eliminateWithCallTracking(callTrackingList=None):
                              "unconditionedVariables: " + str(factor.unconditionedVariables()))
 
         "*** YOUR CODE HERE ***"
+        unconditionedVariables=[]
+        conditionedVariables=[]
+        variableDomainsDict=[]
 
+        #differ from the problem 3,factor there is single but not a list
+        #to solve problems,we can just use the functions the problem 4 said
+        unconditionedVariables=list(factor.unconditionedVariables())
+        conditionedVariables=factor.conditionedVariables()
+        variableDomainsDict=factor.variableDomainsDict()
+
+        #new factor(return)
+        #newFactor=Factor(unconditionedVariables,conditionedVariables,variableDomainsDict)
+
+        #calculate the set of unconditioned variables and conditioned variables 
+        
+        #   for the factor obtained by eliminating the variable eliminationVariable.
+        
+        # for unconditioned in unconditionedVariables:
+        #    if unconditioned!=eliminationVariable:
+        #        unconditionedVariables.append(unconditioned)
+        
+        unconditionedVariables=[unconditioned for unconditioned in unconditionedVariables
+                                        if unconditioned !=eliminationVariable]
+        
+        newFactor=Factor(unconditionedVariables,conditionedVariables,variableDomainsDict)
+        
+        #use factor.getAllPossibleAssignmentDicts() to iterate through all combinations of assignments:
+        for assignment in newFactor.getAllPossibleAssignmentDicts():
+            probability=0
+            for eliminateValues in variableDomainsDict[eliminationVariable]:
+                oldAssign=assignment.copy() # In order to remain the ordinary sample
+                # record eliminationVariables
+                oldAssign[eliminationVariable]=eliminateValues
+                probability+=factor.getProbability(oldAssign)
+            newFactor.setProbability(assignment,probability)
+
+        return newFactor
 
         "*** END YOUR CODE HERE ***"
 
@@ -252,5 +288,42 @@ def normalize(factor):
                              str(factor))
 
     "*** YOUR CODE HERE ***"
+
+    #   If the sum of probabilities in the input factor is 0,
+    #       you should return None.
+    unconditionedVariables=[]
+    conditionedVariables=[]
+    variableDomainsDict=[]
+
+    unconditionedVariables=list(factor.unconditionedVariables())
+    conditionedVariables=factor.conditionedVariables()
+    variableDomainsDict=factor.variableDomainsDict()
+
+    SumOfProbability=0
+    for assignment in factor.getAllPossibleAssignmentDicts():
+        SumOfProbability+=factor.getProbability(assignment)
+    if SumOfProbability==0:
+        return None
+    
+    # Because:all variables that have more than one element in their domain are assumed to be unconditioned
+    # So:Traverse into the unconditionedVariables,if the length==1 ,add to the conditionedVariables
+    for unconditioned in unconditionedVariables:
+        if len(variableDomainsDict[unconditioned])==1:
+            conditionedVariables.add(unconditioned) #add()是加到末尾，不用append()
+        # ATTENTION:Normalize:value is single
+        
+        # if unconditioned not in conditionedVariables:
+        #    unconditionedVariables.append(unconditioned)
+        
+    unconditionedVariables=[unconditioned for unconditioned in unconditionedVariables
+                                        if unconditioned not in conditionedVariables]
+    
+    newFactor=Factor(unconditionedVariables,conditionedVariables,variableDomainsDict)
+
+    for assignment in newFactor.getAllPossibleAssignmentDicts():
+        probability=factor.getProbability(assignment)
+        newFactor.setProbability(assignment,probability/SumOfProbability)
+    
+    return newFactor
 
     "*** END YOUR CODE HERE ***"
